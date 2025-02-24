@@ -12,6 +12,10 @@ Route::get('/', function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/{pathMatch}', function() {
+    return view('welcome');
+})->where('pathMatch',".*");
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('clothing-items', ClothingItemController::class);
