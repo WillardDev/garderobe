@@ -1,22 +1,22 @@
 <template>
-    <div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full space-y-8">
+    <div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div class="w-full max-w-md bg-white shadow p-8 space-y-8">
         <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-          <p class="mt-2 text-center text-sm text-gray-600">
+          <h2 class="text-2xl font-serif font-light tracking-wider text-gray-900 border-b border-gray-200 pb-3">Sign In</h2>
+          <p class="mt-4 text-sm text-gray-600">
             Or
-            <router-link :to="{ name: 'register' }" class="font-medium text-indigo-600 hover:text-indigo-500">
-              register for a new account
+            <router-link :to="{ name: 'register' }" class="font-medium text-black hover:text-gray-800 transition-colors">
+              create a new account
             </router-link>
           </p>
         </div>
         <form class="mt-8 space-y-6" @submit.prevent="login">
-          <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ error }}</span>
+          <div v-if="error" class="bg-red-50 border-l-4 border-red-400 p-4" role="alert">
+            <p class="text-sm text-red-700">{{ error }}</p>
           </div>
-          <div class="rounded-md shadow-sm -space-y-px">
+          <div class="space-y-4">
             <div>
-              <label for="email-address" class="sr-only">Email address</label>
+              <label for="email-address" class="block text-xs font-light tracking-wider uppercase text-gray-500 mb-2">Email address</label>
               <input 
                 id="email-address" 
                 name="email" 
@@ -24,12 +24,12 @@
                 autocomplete="email" 
                 required 
                 v-model="form.email"
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                placeholder="Email address" 
+                class="block w-full border-gray-300 focus:ring-0 focus:border-black text-sm" 
+                placeholder="Your email" 
               />
             </div>
             <div>
-              <label for="password" class="sr-only">Password</label>
+              <label for="password" class="block text-xs font-light tracking-wider uppercase text-gray-500 mb-2">Password</label>
               <input 
                 id="password" 
                 name="password" 
@@ -37,8 +37,8 @@
                 autocomplete="current-password" 
                 required 
                 v-model="form.password"
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                placeholder="Password" 
+                class="block w-full border-gray-300 focus:ring-0 focus:border-black text-sm" 
+                placeholder="Your password" 
               />
             </div>
           </div>
@@ -46,7 +46,7 @@
           <div>
             <button 
               type="submit"
-              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="w-full px-6 py-3 border border-transparent bg-black text-sm tracking-wide uppercase text-white hover:bg-gray-800 transition-colors duration-300"
               :disabled="loading"
             >
               <span v-if="loading">Signing in...</span>
@@ -102,3 +102,22 @@
   };
   </script>
   
+  <style scoped>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+  
+  .font-serif {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  
+  .font-sans {
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .tracking-wider {
+    letter-spacing: 0.1em;
+  }
+  
+  .tracking-widest {
+    letter-spacing: 0.2em;
+  }
+  </style>

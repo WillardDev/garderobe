@@ -15,7 +15,7 @@
         localStorage.removeItem('token');
         
         // Redirect to login page
-        this.$router.push({ name: 'login' });
+        this.$router.push({ name: 'home' });
       }
     }
   };
