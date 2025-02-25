@@ -57,68 +57,60 @@ class ClothingItemFactory extends Factory
         $itemTypes = $categoryItems[$categoryName] ?? ['Clothing Item'];
         $itemName = $this->faker->randomElement($itemTypes);
         
-        // Generate category-appropriate image
-        $imageId = $this->faker->numberBetween(1, 1000);
-        $width = 600;
-        $height = 800;
+        // Create the item name first
+        $itemFullName = $this->faker->randomElement($brands) . ' ' . $itemName;
         
-        // For more specific category-based image URLs
-        $categoryKeywords = [
-            'Tops' => 'shirt,tshirt,blouse,sweater,hoodie',
-            'Bottoms' => 'pants,jeans,shorts,skirt,trousers',
-            'Outerwear' => 'jacket,coat,blazer,parka',
-            'Footwear' => 'shoes,sneakers,boots,sandals',
-            'Accessories' => 'hat,scarf,bag,watch,sunglasses',
-            'Formal Wear' => 'suit,dress,formal,tuxedo,gown',
-            'Activewear' => 'sportswear,athletic,gym,running',
-            'Sleepwear' => 'pajamas,nightwear,robe'
-        ];
+        // Format name for file matching (convert to lowercase, replace spaces with hyphens)
+        $formattedName = strtolower(str_replace(' ', '-', $itemName));
         
-        $keyword = strtolower(str_replace(' ', '-', $itemName));
-        $categoryKeyword = $categoryKeywords[$categoryName] ?? 'clothing';
+        // Use a local image from storage/app/public/images
+        // Get all image files from the directory
+        $localImages = Storage::disk('public')->files('images');
         
-        // Choose from different image providers
-        $imageProviders = [
-            "https://picsum.photos/id/{$this->faker->numberBetween(1, 70)}/{$width}/{$height}",
-            // "https://picsum.photos/id/{$this->faker->numberBetween(1, 70)}/{$this->faker->word}/{$width}/{$height}",
-            // "https://picsum.photos/id/{$this->faker->numberBetween(1, 70)}/{$width}/{$height}?grayscale",
-            // "https://picsum.photos/id/{$this->faker->numberBetween(1, 70)}/{$width}/{$height}/?blur",
-        ];
+        // Filter to only include image files
+        $localImages = array_filter($localImages, function($path) {
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            return in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+        });
         
-        // Generate the image path and URL
-        $imagePath = 'images/' . $this->faker->uuid;
-        $imageUrl = $this->faker->randomElement($imageProviders);
+        // Check if we have any images
+        if (empty($localImages)) {
+            throw new \Exception('No images found in storage/app/public/images directory');
+        }
         
-        // Download the image contents from the URL
-        $imageContents = file_get_contents($imageUrl);
+        // Try to find an image that matches the item name
+        $matchedImage = null;
+        foreach ($localImages as $imagePath) {
+            $filename = strtolower(pathinfo($imagePath, PATHINFO_FILENAME));
+            if (strpos($filename, $formattedName) !== false) {
+                $matchedImage = $imagePath;
+                break;
+            }
+        }
         
-        // Get the content type of the image
-        $contentType = finfo_buffer(finfo_open(FILEINFO_MIME_TYPE), $imageContents);
-                
-        // Check if the content type is in the required formats
-        $allowedFormats = ['image/jpeg', 'image/png'];
+        // If no matching image found, pick a random one
+        $selectedImagePath = $matchedImage ?? $this->faker->randomElement($localImages);
         
-        $fileExtension = match ($contentType) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            default => 'jpg',
-        };
+        // Create a descriptive filename that includes the item name
+        $sanitizedItemName = preg_replace('/[^a-z0-9]+/', '-', strtolower($itemFullName));
+        $uniqueFilename = $sanitizedItemName . '-' . substr($this->faker->uuid, 0, 8) . '.' . pathinfo($selectedImagePath, PATHINFO_EXTENSION);
+        $destinationPath = 'images/' . $uniqueFilename;
         
-        // Update the image path with the correct file extension
-        $imagePath .= '.' . $fileExtension;
-        
-        // Store the image in the local storage disk
-        Storage::disk('images')->put($imagePath, $imageContents);
+        // Copy the file to the image storage location
+        if (Storage::disk('public')->exists($selectedImagePath)) {
+            $imageContents = Storage::disk('public')->get($selectedImagePath);
+            Storage::disk('images')->put($destinationPath, $imageContents);
+        }
 
         return [
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory()->create()->id,
             'category_id' => $category ? $category->id : Category::factory()->create()->id,
-            'name' => $this->faker->randomElement($brands) . ' ' . $itemName,
+            'name' => $itemFullName,
             'description' => $this->faker->sentence(6, true),
             'color' => $this->faker->randomElement($colors),
             'size' => $this->faker->randomElement($sizes),
             'brand' => $this->faker->randomElement($brands),
-            'image_path' => $imagePath,
+            'image_path' => $destinationPath,
         ];
     }
     

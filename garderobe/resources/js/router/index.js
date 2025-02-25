@@ -8,6 +8,7 @@ import CreateClothingItem from '../components/CreateClothingItem.vue';
 import EditClothingItem from '../components/EditClothingItem.vue';
 import SingleClothingItem from '../components/SingleClothingItem.vue';
 import ClothingItemGallery from '../components/ClothingItemGallery.vue';
+import OutfitMatcher from '../components/OutfitMatcher.vue';
 import notFound from '../components/NotFound.vue';
 
 // Define routes
@@ -69,6 +70,18 @@ const routes = [
     {
         path: '/:pathMatch(.*)*',
         component: notFound,
+    },
+    {
+      path: '/dashboard/outfit-matcher',
+      component: OutfitMatcher,
+      name: 'dashboard-outfit-matcher',
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/outfit-matcher',
+      name: 'outfit-matcher',
+      component: OutfitMatcher,
+      meta: { requiresAuth: true }
     },
 ];
 

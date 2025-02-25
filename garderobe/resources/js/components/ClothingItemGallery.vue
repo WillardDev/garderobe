@@ -37,7 +37,7 @@
               v-model="search" 
               @input="filterItems"
               class="block w-full border-gray-300 focus:ring-0 focus:border-black text-sm"
-              placeholder="Search by name, brand, or color"
+              placeholder="Search  ..."
             />
           </div>
         </div>
