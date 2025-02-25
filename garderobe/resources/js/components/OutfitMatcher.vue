@@ -41,7 +41,7 @@
                   </div>
                 </div>
                 <div class="flex items-start space-x-3">
-                  <div class="w-6 h-6 rounded-full bg-gradient-to-r from-yellow-300 to-blue-500 to-red-500 mt-1"></div>
+                  <div class="w-6 h-6 rounded-full bg-gradient-to-r from-yellow-300 to-blue-500 mt-1"></div>
                   <div>
                     <p class="font-medium text-sm">Triadic</p>
                     <p class="text-xs text-gray-500">Three colors evenly spaced on the color wheel</p>
@@ -406,20 +406,8 @@ export default {
           this.setupDefaultCategories();
         }
         
-        // Fetch clothing items
-        const itemsResponse = await api.get('/api/clothing-items', {
-          params: { limit: 100 } // Fetch more items if API supports pagination
-        });
-        
-        if (itemsResponse.data.data) {
-          // Pagination response
-          this.items = itemsResponse.data.data;
-        } else if (Array.isArray(itemsResponse.data)) {
-          // Direct array response
-          this.items = itemsResponse.data;
-        } else {
-          throw new Error('Invalid data structure');
-        }
+        // Fetch all clothing items with increased page size
+        await this.fetchAllClothingItems();
       } catch (error) {
         console.error('Error fetching data:', error);
         // Create some dummy data for demo purposes
@@ -427,6 +415,30 @@ export default {
         this.setupDummyItems();
       } finally {
         this.loading = false;
+      }
+    },
+    
+    async fetchAllClothingItems() {
+      try {
+        // Request a much larger page size
+        const response = await api.get('/api/clothing-items', {
+          params: { 
+            per_page: 500 
+          }
+        });
+        
+        if (response.data && response.data.data) {
+          // Pagination response
+          this.items = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          // Direct array response
+          this.items = response.data;
+        } else {
+          throw new Error('Invalid data structure');
+        }
+      } catch (error) {
+        console.error('Error fetching clothing items:', error);
+        // Fallback to demo data will happen in the parent fetchData method
       }
     },
     
@@ -665,30 +677,35 @@ export default {
       const hsl2 = this.rgbToHsl(rgb2.r, rgb2.g, rgb2.b);
       
       // If either color is a neutral (black, white, gray)
-      if ((hsl1.s < 0.15 || hsl1.l > 0.9 || hsl1.l < 0.1) || 
-          (hsl2.s < 0.15 || hsl2.l > 0.9 || hsl2.l < 0.1)) {
+      if ((hsl1.s < 0.15 || hsl1.l > 0.85 || hsl1.l < 0.15) || 
+          (hsl2.s < 0.15 || hsl2.l > 0.85 || hsl2.l < 0.15)) {
         return true; // Neutrals match with everything
       }
       
       switch (matchType) {
         case 'complementary':
           // Complementary: colors are roughly opposite on the color wheel
-          return Math.abs(hsl1.h - hsl2.h) > 0.4 && Math.abs(hsl1.h - hsl2.h) < 0.6;
+          // More relaxed version - anything between 135° and 225° away (0.375-0.625)
+          const compDiff = Math.abs(hsl1.h - hsl2.h);
+          return compDiff > 0.375 && compDiff < 0.625;
           
         case 'analogous':
           // Analogous: colors are close on the color wheel
+          // More relaxed - within 60° (0.166)
           const hueDiff = Math.abs(hsl1.h - hsl2.h);
-          return hueDiff < 0.12 || hueDiff > 0.88;
+          return hueDiff < 0.166 || hueDiff > 0.834;
           
         case 'monochromatic':
           // Monochromatic: same hue, different brightness/saturation
-          return Math.abs(hsl1.h - hsl2.h) < 0.08;
+          // More relaxed - allow slightly different hues (within 30°)
+          return Math.abs(hsl1.h - hsl2.h) < 0.083;
           
         case 'triadic':
-          // Triadic: colors are evenly spaced on the color wheel
+          // Triadic: colors are evenly spaced on the color wheel (120° apart)
+          // More relaxed - allow anything within 30° of the ideal positions
           const diff1 = Math.abs(hsl1.h - hsl2.h);
           const diff2 = 1 - diff1;
-          return (diff1 > 0.3 && diff1 < 0.37) || (diff2 > 0.3 && diff2 < 0.37);
+          return (diff1 > 0.278 && diff1 < 0.389) || (diff2 > 0.278 && diff2 < 0.389);
           
         default:
           return true;

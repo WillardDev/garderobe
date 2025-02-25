@@ -9,18 +9,18 @@
       </svg>
       <span class="hidden md:inline">Logout</span>
     </button>
-  </template>
+</template>
   
-  <script>
-  export default {
-    methods: {
-      logout() {
-        // Clear the authentication token
-        localStorage.removeItem('token');
-        
-        // Redirect to login page
-        this.$router.push({ name: 'home' });
-      }
-    }
-  };
-  </script>
+<script>
+    export default {
+        methods: {
+        logout() {
+            // Clear the authentication token
+            localStorage.removeItem('token');
+            
+            // Redirect to login page
+            this.$router.push({ name: 'home' });
+        }
+        }
+    };
+</script>

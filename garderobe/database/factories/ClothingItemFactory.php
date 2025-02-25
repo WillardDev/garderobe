@@ -53,19 +53,8 @@ class ClothingItemFactory extends Factory
         $category = Category::inRandomOrder()->first();
         $categoryName = $category ? $category->name : 'Tops';
         
-        // Pick a random item name from the category's items
-        $itemTypes = $categoryItems[$categoryName] ?? ['Clothing Item'];
-        $itemName = $this->faker->randomElement($itemTypes);
-        
-        // Create the item name first
-        $itemFullName = $this->faker->randomElement($brands) . ' ' . $itemName;
-        
-        // Format name for file matching (convert to lowercase, replace spaces with hyphens)
-        $formattedName = strtolower(str_replace(' ', '-', $itemName));
-        
-        // Use a local image from storage/app/public/images
-        // Get all image files from the directory
-        $localImages = Storage::disk('public')->files('images');
+        // STEP 1: Get all images from the storage folder
+        $localImages = Storage::disk('public')->files('clothes');
         
         // Filter to only include image files
         $localImages = array_filter($localImages, function($path) {
@@ -75,23 +64,44 @@ class ClothingItemFactory extends Factory
         
         // Check if we have any images
         if (empty($localImages)) {
-            throw new \Exception('No images found in storage/app/public/images directory');
+            throw new \Exception('No images found in storage/app/public/clothes directory');
         }
         
-        // Try to find an image that matches the item name
-        $matchedImage = null;
-        foreach ($localImages as $imagePath) {
-            $filename = strtolower(pathinfo($imagePath, PATHINFO_FILENAME));
-            if (strpos($filename, $formattedName) !== false) {
-                $matchedImage = $imagePath;
-                break;
+        // STEP 2: Select a random image from the folder
+        $selectedImagePath = $this->faker->randomElement($localImages);
+        $filename = pathinfo($selectedImagePath, PATHINFO_FILENAME);
+        
+        // STEP 3: Extract item type from filename
+        // Convert underscores/hyphens to spaces and clean up the filename
+        $cleanFilename = str_replace(['-', '_'], ' ', $filename);
+        $cleanFilename = preg_replace('/[0-9]+/', '', $cleanFilename); // Remove numbers
+        $cleanFilename = trim($cleanFilename);
+        
+        // STEP 4: Determine the item type and category based on the image filename
+        $detectedItemType = null;
+        $detectedCategory = null;
+        
+        // Search through all categories and their items to find a match
+        foreach ($categoryItems as $catName => $items) {
+            foreach ($items as $item) {
+                if (stripos($cleanFilename, strtolower($item)) !== false) {
+                    $detectedItemType = $item;
+                    $detectedCategory = $catName;
+                    break 2; // Break both loops
+                }
             }
         }
         
-        // If no matching image found, pick a random one
-        $selectedImagePath = $matchedImage ?? $this->faker->randomElement($localImages);
+        // If we couldn't determine the item type from filename, use one from the category
+        if (!$detectedItemType) {
+            $itemTypes = $categoryItems[$categoryName] ?? ['Clothing Item'];
+            $detectedItemType = $this->faker->randomElement($itemTypes);
+        }
         
-        // Create a descriptive filename that includes the item name
+        // STEP 5: Generate the item name using brand and detected item type
+        $itemFullName = $this->faker->randomElement($brands) . ' ' . $detectedItemType;
+        
+        // Create a unique filename for storing
         $sanitizedItemName = preg_replace('/[^a-z0-9]+/', '-', strtolower($itemFullName));
         $uniqueFilename = $sanitizedItemName . '-' . substr($this->faker->uuid, 0, 8) . '.' . pathinfo($selectedImagePath, PATHINFO_EXTENSION);
         $destinationPath = 'images/' . $uniqueFilename;
@@ -104,7 +114,9 @@ class ClothingItemFactory extends Factory
 
         return [
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory()->create()->id,
-            'category_id' => $category ? $category->id : Category::factory()->create()->id,
+            'category_id' => $detectedCategory && $category && $detectedCategory == $categoryName 
+                ? $category->id 
+                : Category::where('name', $detectedCategory)->first()->id ?? $category->id,
             'name' => $itemFullName,
             'description' => $this->faker->sentence(6, true),
             'color' => $this->faker->randomElement($colors),

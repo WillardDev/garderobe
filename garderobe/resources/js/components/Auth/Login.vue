@@ -63,90 +63,90 @@
         </form>
       </div>
     </div>
-  </template>
+</template>
   
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        form: {
-          email: '',
-          password: ''
+<script>
+    import axios from 'axios';
+    
+    export default {
+        data() {
+        return {
+            form: {
+            email: '',
+            password: ''
+            },
+            error: null,
+            loading: false
+        };
         },
-        error: null,
-        loading: false
-      };
-    },
-    created() {
-      // Check if user is already logged in
-      this.checkAuthStatus();
-    },
-    methods: {
-      checkAuthStatus() {
-        const token = localStorage.getItem('token');
-        if (token) {
-          // User is already logged in, redirect to dashboard
-          this.$router.push({ name: 'dashboard' });
+        created() {
+        // Check if user is already logged in
+        this.checkAuthStatus();
+        },
+        methods: {
+        checkAuthStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
+            // User is already logged in, redirect to dashboard
+            this.$router.push({ name: 'dashboard' });
+            }
+        },
+        async login() {
+            this.loading = true;
+            this.error = null;
+            
+            try {
+            const response = await axios.post('/api/login', this.form);
+            localStorage.setItem('token', response.data.access_token);
+            this.$router.push({ name: 'dashboard' });
+            } catch (err) {
+            this.error = err.response?.data?.message || 'Failed to login. Please check your credentials.';
+            } finally {
+            this.loading = false;
+            }
         }
-      },
-      async login() {
-        this.loading = true;
-        this.error = null;
-        
-        try {
-          const response = await axios.post('/api/login', this.form);
-          localStorage.setItem('token', response.data.access_token);
-          this.$router.push({ name: 'dashboard' });
-        } catch (err) {
-          this.error = err.response?.data?.message || 'Failed to login. Please check your credentials.';
-        } finally {
-          this.loading = false;
         }
-      }
+    };
+</script>
+  
+<style scoped>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+    
+    .font-serif {
+        font-family: 'Cormorant Garamond', serif;
     }
-  };
-  </script>
-  
-  <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
-  
-  .font-serif {
-    font-family: 'Cormorant Garamond', serif;
-  }
-  
-  .font-sans {
-    font-family: 'Montserrat', sans-serif;
-  }
-  
-  .tracking-wider {
-    letter-spacing: 0.1em;
-  }
-  
-  .tracking-widest {
-    letter-spacing: 0.2em;
-  }
-  
-  /* Input focus animation */
-  input:focus {
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Label transitions */
-  .group:focus-within label {
-    color: black;
-    font-weight: 500;
-  }
-  
-  /* Error message animation */
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-  }
-  
-  div[role="alert"] {
-    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
-  }
-  </style>
+    
+    .font-sans {
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .tracking-wider {
+        letter-spacing: 0.1em;
+    }
+    
+    .tracking-widest {
+        letter-spacing: 0.2em;
+    }
+    
+    /* Input focus animation */
+    input:focus {
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Label transitions */
+    .group:focus-within label {
+        color: black;
+        font-weight: 500;
+    }
+    
+    /* Error message animation */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    div[role="alert"] {
+        animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+ </style>

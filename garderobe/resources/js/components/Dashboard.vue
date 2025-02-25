@@ -394,17 +394,11 @@
         this.error = null;
         
         try {
-          // Fetch all clothing items
-          const itemsResponse = await api.get('/api/clothing-items', { params: { limit: 100 } });
+          // Fetch all clothing items with increased page size
+          await this.fetchAllClothingItems();
           
           // Fetch all categories
           const categoriesResponse = await api.get('/api/categories');
-          
-          // Process data if available
-          if (itemsResponse.data && itemsResponse.data.data) {
-            this.clothingItems = itemsResponse.data.data;
-            this.processStats();
-          }
           
           if (categoriesResponse.data) {
             this.categories = categoriesResponse.data;
@@ -415,6 +409,26 @@
           this.error = 'Failed to load dashboard data. Please try again later.';
         } finally {
           this.loading = false;
+        }
+      },
+  
+      async fetchAllClothingItems() {
+        try {
+          // Request a much larger page size
+          const response = await api.get('/api/clothing-items', {
+            params: { 
+              per_page: 500
+            }
+          });
+          
+          if (response.data && response.data.data) {
+            this.clothingItems = response.data.data;
+            console.log(`Loaded ${this.clothingItems.length} clothing items`);
+            this.processStats();
+          }
+        } catch (error) {
+          console.error('Error fetching clothing items:', error);
+          this.error = 'Failed to load your clothing items. Please try again later.';
         }
       },
       
@@ -535,26 +549,3 @@
     }
   };
   </script>
-  
-  <style scoped>
-  /* Import Google Fonts */
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
-  
-  /* Extend Tailwind with custom styles */
-  :deep(.font-serif) {
-    font-family: 'Cormorant Garamond', serif;
-  }
-  
-  :deep(.font-sans) {
-    font-family: 'Montserrat', sans-serif;
-  }
-  
-  /* Extended letter spacing classes */
-  .tracking-wider {
-    letter-spacing: 0.1em;
-  }
-  
-  .tracking-widest {
-    letter-spacing: 0.2em;
-  }
-  </style>

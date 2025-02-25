@@ -24,7 +24,13 @@ class ClothingItemController extends Controller
             });
         }
 
-        return $query->with('category')->paginate(12);
+        // Get the per_page parameter from request, default to 12 if not provided
+        $perPage = $request->input('per_page', 12);
+        
+        // Set a reasonable maximum to prevent performance issues
+        $perPage = min($perPage, 500);
+
+        return $query->with('category')->paginate($perPage);
     }
 
     /**
