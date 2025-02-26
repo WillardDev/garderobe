@@ -64,19 +64,13 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 5. Generate application key
-
-```bash
-php artisan key:generate
-```
-
-### 6. Run database migrations
+### 5. Run database migrations
 
 ```bash
 php artisan migrate
 ```
 
-### 7. Create storage link
+### 6. Create storage link
 
 This creates a symbolic link from `public/storage` to `storage/app/public`:
 
@@ -84,7 +78,7 @@ This creates a symbolic link from `public/storage` to `storage/app/public`:
 php artisan storage:link
 ```
 
-### 8. Prepare clothing images folder
+### 7. Prepare clothing images folder
 
 Create a folder for clothing images in the storage directory:
 
@@ -94,7 +88,7 @@ mkdir -p storage/app/public/clothes
 
 Add your clothing images to this directory (`storage/app/public/clothes`). The application will look for images here when generating clothing items. For optimal results, name your images to match the clothing type (e.g., "t-shirt.jpg", "jeans.png", etc.).
 
-### 9. Seed the database
+### 8. Seed the database
 
 The application comes with seeders to populate the database with sample data:
 
@@ -107,7 +101,7 @@ This will run the following seeders in order:
 - CategorySeeder - Creates clothing categories
 - ClothingItemSeeder - Generates clothing items using the images in storage/app/public/clothes
 
-### 10. Start the development server
+### 9. Start the development server
 
 In one terminal, start the Laravel development server:
 
@@ -121,7 +115,7 @@ In another terminal, start the Vite development server:
 npm run dev
 ```
 
-### 11. Access the application
+### 10. Access the application
 
 Open your browser and navigate to:
 
