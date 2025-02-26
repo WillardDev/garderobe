@@ -12,7 +12,7 @@ A modern web application for managing your clothing collection, built with Larav
 
 ## Tech Stack
 
-- Backend: Laravel 10+
+- Backend: Laravel 11
 - Frontend: Vue 3 with Vue Router
 - CSS: Tailwind CSS
 - Build Tool: Vite
