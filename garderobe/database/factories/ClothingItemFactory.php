@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Storage;
 class ClothingItemFactory extends Factory
 {
     /**
+     * Keep track of images that have already been used
+     *
+     * @var array
+     */
+    protected static $usedImages = [];
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -67,8 +74,20 @@ class ClothingItemFactory extends Factory
             throw new \Exception('No images found in storage/app/public/clothes directory');
         }
         
-        // STEP 2: Select a random image from the folder
-        $selectedImagePath = $this->faker->randomElement($localImages);
+        // STEP 2: Filter out images that have already been used
+        $availableImages = array_diff($localImages, self::$usedImages);
+        
+        // If no available images, throw an exception (all images have been used)
+        if (empty($availableImages)) {
+            throw new \Exception('All images have been used. No more unique images available for seeding.');
+        }
+        
+        // Select a random image from the remaining available images
+        $selectedImagePath = $this->faker->randomElement($availableImages);
+        
+        // Mark this image as used
+        self::$usedImages[] = $selectedImagePath;
+        
         $filename = pathinfo($selectedImagePath, PATHINFO_FILENAME);
         
         // STEP 3: Extract item type from filename
@@ -152,5 +171,32 @@ class ClothingItemFactory extends Factory
         ];
         
         return $this->faker->randomElement($fashionColors);
+    }
+    
+    /**
+     * Reset the used images tracking array.
+     * Call this method at the beginning of your seeder if you want to reset.
+     *
+     * @return void
+     */
+    public static function resetUsedImages(): void
+    {
+        self::$usedImages = [];
+    }
+    
+    /**
+     * Get count of available unused images
+     *
+     * @return int
+     */
+    public static function getAvailableImageCount(): int
+    {
+        $allImages = Storage::disk('public')->files('clothes');
+        $allImages = array_filter($allImages, function($path) {
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            return in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+        });
+        
+        return count(array_diff($allImages, self::$usedImages));
     }
 }
