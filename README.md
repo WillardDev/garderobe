@@ -30,7 +30,7 @@ A modern web application for managing your clothing collection, built with Larav
 
 ```bash
 git clone <repository-url>
-cd wardrobe-app
+cd garderobe
 ```
 
 ### 2. Install PHP dependencies
